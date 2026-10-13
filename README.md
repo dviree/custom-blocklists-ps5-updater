@@ -33,7 +33,7 @@ You now have your own copy at `github.com/<your-username>/custom-blocklists-next
 
 ### 2. Add Your NextDNS API Keys as Secrets
 
-The included `blocklists.txt` ships with the [ph00lt0 blocklist](https://github.com/ph00lt0/blocklist) by default. You can add more later.
+The included `blocklists.txt` ships with the [cjrb007 PS5 update blocklist](https://github.com/cjrb007/ps5-dns-block) by default. You can add more later.
 
 First, get your API key:
 1. Log in to [my.nextdns.io/account](https://my.nextdns.io/account)
@@ -68,7 +68,7 @@ The workflow runs automatically every day at 02:00 UTC. To trigger it manually r
 
 ## Adding More Blocklists (Optional)
 
-The included `blocklists.txt` contains ph00lt0 Blocklist. You can add others as like to the txt file.
+The included `blocklists.txt` contains the cjrb007 PS5 update blocklist. You can add others to the txt file — both plain domain lists and hosts-format lists (`0.0.0.0 domain`) are supported.
 All sources are merged and deduplicated automatically. If you remove a URL from this file, all domains unique to that source will be cleaned up on the next run.
 
 
@@ -86,7 +86,7 @@ GitHub Actions has a maximum runtime of 6 hours per job. Very large multi-accoun
 ## Attribution
 
 - nextdnsctl — Community CLI for NextDNS management (MIT licensed)
-- ph00lt0/blocklist — Default included blocklist source
+- cjrb007/ps5-dns-block — Default included blocklist source (PS5 update servers)
 
 
 ## License

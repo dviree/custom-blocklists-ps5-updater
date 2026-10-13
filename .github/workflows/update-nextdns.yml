@@ -21,7 +21,7 @@ jobs:
           python-version: '3.10'
 
       - name: Install nextdnsctl
-        run: pip install nextdnsctl
+        run: pip install 'nextdnsctl==2.0.1'
 
       - name: Update denylist for all accounts
         env:
@@ -76,11 +76,20 @@ jobs:
           echo ""
           echo "Combined raw blocklist: $(wc -l < "$COMBINED_RAW") total lines"
 
-          # Normalize: strip inline comments, trim whitespace, drop empty lines, sort+dedup
+          # Normalize: strip inline comments, drop hosts-format sinkhole addresses
+          # (0.0.0.0 / 127.0.0.1 / :: / ::1), lowercase, keep real domains, sort+dedup
           CLEAN_FILE="$TEMP_DIR/blocklist_clean.txt"
           sed 's/#.*//' "$COMBINED_RAW" \
-            | sed 's/^[[:space:]]*//; s/[[:space:]]*$//' \
-            | grep -v '^$' \
+            | awk '
+                NF == 0 { next }
+                $1 == "0.0.0.0" || $1 == "127.0.0.1" || $1 == "::" || $1 == "::1" {
+                  for (i = 2; i <= NF; i++) print $i
+                  next
+                }
+                { print $1 }
+              ' \
+            | tr '[:upper:]' '[:lower:]' \
+            | grep '\.' \
             | sort -u > "$CLEAN_FILE"
 
           CLEAN_COUNT=$(wc -l < "$CLEAN_FILE")
@@ -106,7 +115,7 @@ jobs:
             export NEXTDNS_API_KEY="$api_key_value"
 
             echo "Fetching all profiles for account $account_num..."
-            profiles=$(nextdnsctl profile-list 2>/dev/null | grep -oP '^[a-z0-9]+(?=:)' | grep -v '^$')
+            profiles=$(nextdnsctl --json profile list 2>/dev/null | jq -r '.[].id' | grep -v '^$')
 
             if [ -z "$profiles" ]; then
               echo "::warning::No profiles found for account $account_num"
@@ -125,7 +134,7 @@ jobs:
 
               # Step 1: Export current denylist and find stale entries
               echo "Exporting current denylist..."
-              if nextdnsctl denylist export "$profile" 2>/dev/null \
+              if nextdnsctl -p "$profile" denylist export 2>/dev/null \
                 | sed 's/#.*//' \
                 | sed 's/^[[:space:]]*//; s/[[:space:]]*$//' \
                 | grep -v '^$' \
@@ -138,7 +147,7 @@ jobs:
 
                 if [ "$stale_count" -gt 0 ]; then
                   echo "Found $stale_count stale domain(s) to remove"
-                  if xargs -r nextdnsctl denylist remove "$profile" < "$STALE_FILE" 2>&1; then
+                  if xargs -r nextdnsctl -p "$profile" denylist remove < "$STALE_FILE" 2>&1; then
                     echo "✓ Removed $stale_count stale domain(s)"
                   else
                     echo "::warning::Some stale domains may not have been removed for profile $profile"
@@ -152,7 +161,7 @@ jobs:
 
               # Step 2: Import (delta-aware, only adds missing domains)
               echo "Importing blocklist..."
-              if nextdnsctl denylist import "$profile" "$COMBINED_RAW" 2>&1; then
+              if nextdnsctl -p "$profile" denylist import "$CLEAN_FILE" 2>&1; then
                 echo "✓ Import completed for profile: $profile"
               else
                 echo "✗ Failed to import for profile: $profile"
