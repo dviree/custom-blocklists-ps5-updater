@@ -73,6 +73,15 @@ jobs:
             url_index=$((url_index + 1))
           done < "$LISTS_FILE"
 
+          # Merge your own domains from custom-denylist.txt (kept and never cleaned up)
+          CUSTOM_FILE="custom-denylist.txt"
+          if [ -f "$CUSTOM_FILE" ]; then
+            echo ""
+            echo "Adding custom domains from $CUSTOM_FILE"
+            cat "$CUSTOM_FILE" >> "$COMBINED_RAW"
+            echo "" >> "$COMBINED_RAW"
+          fi
+
           echo ""
           echo "Combined raw blocklist: $(wc -l < "$COMBINED_RAW") total lines"
 

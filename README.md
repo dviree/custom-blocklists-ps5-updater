@@ -72,10 +72,14 @@ The included `blocklists.txt` contains the cjrb007 PS5 update blocklist. You can
 All sources are merged and deduplicated automatically. If you remove a URL from this file, all domains unique to that source will be cleaned up on the next run.
 
 
+## Your Own Domains
+
+Put your own domains in `custom-denylist.txt`, one per line. They are merged with the blocklists, added to NextDNS, and never removed by the stale cleanup.
+
 ## First Run Warning
 
 > [!WARNING]
-> On the first run after enabling stale cleanup, any domains already in your NextDNS denylist that are not in the blocklists will be flagged as stale and removed. If you have manually added domains to NextDNS that you want to keep, either add their source to `blocklists.txt` or add them to a custom list hosted somewhere accessible by URL.
+> On the first run after enabling stale cleanup, any domains already in your NextDNS denylist that are not in the blocklists will be flagged as stale and removed. If you have manually added domains to NextDNS that you want to keep, add them to `custom-denylist.txt` before the first run.
 
 ## Limitations
 Extremely large blocklists may hit NextDNS API rate limits. nextdnsctl handles retries, but monitor logs for warnings.

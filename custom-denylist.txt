@@ -1,0 +1,4 @@
+# Your own domains to block, one per line.
+# These are always added to NextDNS and never removed by the stale cleanup.
+# Lines starting with # are ignored.
+# example.com
